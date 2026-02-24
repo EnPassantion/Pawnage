@@ -9,25 +9,87 @@
             background: black;
             overflow: hidden;
         }
-        img {
+        img, video {
             width: 100vw;
             height: 100vh;
             object-fit: contain;
         }
+        video {
+            display: none;
+        }
+        img {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <img id="motd" src="" />
+
+    <img id="motdImage" src="" />
+    
+    <video id="motdVideo" autoplay muted loop playsinline>
+        <source src="motd.mp4" type="video/mp4">
+    </video>
 
     <script>
-        var images = [
-            "motd1.png",
-            "motd2.jpg",
-            "motd3.png",
+        // ===== MEDIA POOL =====
+        // Add ALL your MOTD content here (images + video)
+        var mediaPool = [
+            { type: "image", src: "motd1.png" },
+            { type: "image", src: "motd2.jpg" },
+            { type: "image", src: "motd3.png" },
+            { type: "video", src: "motd.mp4" }
         ];
 
-        var randomImage = images[Math.floor(Math.random() * images.length)];
-        document.getElementById("motd").src = randomImage;
+        var imageEl = document.getElementById("motdImage");
+        var videoEl = document.getElementById("motdVideo");
+
+        function showImage(src) {
+            videoEl.style.display = "none";
+            imageEl.style.display = "block";
+            imageEl.src = src;
+        }
+
+        function showVideo(src) {
+            imageEl.style.display = "none";
+            videoEl.style.display = "block";
+            videoEl.src = src;
+            videoEl.load();
+
+            // If video fails (common in UE3 GFx), fallback to an image
+            videoEl.onerror = function () {
+                fallbackToImage();
+            };
+
+            // Safety fallback if video never starts
+            setTimeout(function () {
+                if (videoEl.readyState === 0) {
+                    fallbackToImage();
+                }
+            }, 2000);
+        }
+
+        function fallbackToImage() {
+            // Pick a random image from pool
+            var imageOptions = mediaPool.filter(function (m) {
+                return m.type === "image";
+            });
+            var randomImage = imageOptions[Math.floor(Math.random() * imageOptions.length)];
+            showImage(randomImage.src);
+        }
+
+        function pickRandomMedia() {
+            var random = mediaPool[Math.floor(Math.random() * mediaPool.length)];
+
+            if (random.type === "video") {
+                showVideo(random.src);
+            } else {
+                showImage(random.src);
+            }
+        }
+
+        // Run on page load (when player opens MOTD)
+        pickRandomMedia();
     </script>
+
 </body>
 </html>
