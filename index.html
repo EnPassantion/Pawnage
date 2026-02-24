@@ -1,72 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>MOTD</title>
-    <style>
-        body {
-            margin: 0;
-            background: black;
-            overflow: hidden;
-        }
-        img, video {
-            width: 100vw;
-            height: 100vh;
-            object-fit: contain;
-        }
-        video {
-            display: none;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>MOTD</title>
+  <style>
+    body { margin:0; background:black; overflow:hidden; }
+    img, video { width:100vw; height:100vh; object-fit:contain; }
+  </style>
 </head>
 <body>
 
-    <img id="motdImage" src="" />
-    
-    <video id="motdVideo" autoplay muted loop playsinline>
-        <source src="motd.mp4" type="video/mp4">
-    </video>
+  <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;">
+    <source src="motd1.mp4" type="video/mp4">
+  </video>
 
-    <script>
-        // ===== SETTINGS =====
-        var useVideo = true; // set to false if you only want images
-        
-        var images = [
-            "motd1.png",
-            "motd2.jpg",
-            "motd3.png"
-        ];
+  <img id="motdImage" style="display:none;" />
 
-        var video = document.getElementById("motdVideo");
-        var image = document.getElementById("motdImage");
+  <script>
+    const images = ["motd1.png","motd2.jpg","motd3.png"];
+    const v = document.getElementById("motdVideo");
+    const img = document.getElementById("motdImage");
 
-        function showRandomImage() {
-            var randomImage = images[Math.floor(Math.random() * images.length)];
-            image.src = randomImage;
-            image.style.display = "block";
-            video.style.display = "none";
-        }
+    function showRandomImage() {
+      const pick = images[Math.floor(Math.random() * images.length)];
+      img.src = pick;
+      img.style.display = "block";
+      v.style.display = "none";
+    }
 
-        if (useVideo) {
-            // Try to play video (meme clip)
-            video.style.display = "block";
-            image.style.display = "none";
+    // Show video first
+    v.style.display = "block";
+    img.style.display = "none";
+    v.muted = true;
 
-            // If video fails (very common in UE3/Scaleform), fallback to image
-            video.onerror = function() {
-                showRandomImage();
-            };
+    // If the video errors, fallback immediately
+    v.addEventListener("error", showRandomImage);
 
-            // Safety fallback if video never starts (GFx compatibility)
-            setTimeout(function() {
-                if (video.readyState === 0) {
-                    showRandomImage();
-                }
-            }, 2000);
-        } else {
-            showRandomImage();
-        }
-    </script>
+    // Try to start playback; if blocked, fallback
+    const p = v.play();
+    if (p && p.catch) {
+      p.catch(showRandomImage);
+    }
+
+    // Safety: if it never loads metadata, fallback after 2s
+    setTimeout(() => {
+      if (v.readyState < 1) showRandomImage();
+    }, 2000);
+  </script>
 
 </body>
 </html>
