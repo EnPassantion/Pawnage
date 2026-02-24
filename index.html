@@ -17,9 +17,6 @@
         video {
             display: none;
         }
-        img {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -31,64 +28,44 @@
     </video>
 
     <script>
-        // ===== MEDIA POOL =====
-        // Add ALL your MOTD content here (images + video)
-        var mediaPool = [
-            { type: "image", src: "motd1.png" },
-            { type: "image", src: "motd2.jpg" },
-            { type: "image", src: "motd3.png" },
-            { type: "video", src: "motd.mp4" }
+        // ===== SETTINGS =====
+        var useVideo = true; // set to false if you only want images
+        
+        var images = [
+            "motd1.png",
+            "motd2.jpg",
+            "motd3.png"
         ];
 
-        var imageEl = document.getElementById("motdImage");
-        var videoEl = document.getElementById("motdVideo");
+        var video = document.getElementById("motdVideo");
+        var image = document.getElementById("motdImage");
 
-        function showImage(src) {
-            videoEl.style.display = "none";
-            imageEl.style.display = "block";
-            imageEl.src = src;
+        function showRandomImage() {
+            var randomImage = images[Math.floor(Math.random() * images.length)];
+            image.src = randomImage;
+            image.style.display = "block";
+            video.style.display = "none";
         }
 
-        function showVideo(src) {
-            imageEl.style.display = "none";
-            videoEl.style.display = "block";
-            videoEl.src = src;
-            videoEl.load();
+        if (useVideo) {
+            // Try to play video (meme clip)
+            video.style.display = "block";
+            image.style.display = "none";
 
-            // If video fails (common in UE3 GFx), fallback to an image
-            videoEl.onerror = function () {
-                fallbackToImage();
+            // If video fails (very common in UE3/Scaleform), fallback to image
+            video.onerror = function() {
+                showRandomImage();
             };
 
-            // Safety fallback if video never starts
-            setTimeout(function () {
-                if (videoEl.readyState === 0) {
-                    fallbackToImage();
+            // Safety fallback if video never starts (GFx compatibility)
+            setTimeout(function() {
+                if (video.readyState === 0) {
+                    showRandomImage();
                 }
             }, 2000);
+        } else {
+            showRandomImage();
         }
-
-        function fallbackToImage() {
-            // Pick a random image from pool
-            var imageOptions = mediaPool.filter(function (m) {
-                return m.type === "image";
-            });
-            var randomImage = imageOptions[Math.floor(Math.random() * imageOptions.length)];
-            showImage(randomImage.src);
-        }
-
-        function pickRandomMedia() {
-            var random = mediaPool[Math.floor(Math.random() * mediaPool.length)];
-
-            if (random.type === "video") {
-                showVideo(random.src);
-            } else {
-                showImage(random.src);
-            }
-        }
-
-        // Run on page load (when player opens MOTD)
-        pickRandomMedia();
     </script>
 
 </body>
