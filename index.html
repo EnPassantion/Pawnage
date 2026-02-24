@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>MOTD</title>
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+        }
+        img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <img id="motd" src="" />
+
+    <script>
+        var images = [
+            "motd1.png",
+            "motd2.png",
+            "motd3.png",
+            "motd4.png"
+        ];
+
+        var randomImage = images[Math.floor(Math.random() * images.length)];
+        document.getElementById("motd").src = randomImage;
+    </script>
+</body>
+</html>
