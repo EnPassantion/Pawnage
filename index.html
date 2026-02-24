@@ -10,62 +10,66 @@
 </head>
 <body>
 
-  <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;">
-    <source src="motd1.mp4" type="video/mp4">
-  </video>
+  <!-- IMPORTANT: no <source> child here -->
+  <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;"></video>
 
   <img id="motdImage" style="display:none;" />
 
-<script>
-  // Put ALL media (videos + images) in one list
-  const mediaPool = [
-    { type: "video", src: "motd1.mp4" },
-    { type: "image", src: "motd1.png" },
-    { type: "image", src: "motd2.jpg" },
-    { type: "image", src: "motd3.png" }
-  ];
+  <script>
+    const mediaPool = [
+      { type: "video", src: "motd1.mp4" },
+      { type: "image", src: "motd1.png" },
+      { type: "image", src: "motd2.jpg" },
+      { type: "image", src: "motd3.png" }
+    ];
 
-  const v = document.getElementById("motdVideo");
-  const img = document.getElementById("motdImage");
+    const v = document.getElementById("motdVideo");
+    const img = document.getElementById("motdImage");
 
-  function showRandomMedia() {
-    const pick = mediaPool[Math.floor(Math.random() * mediaPool.length)];
-
-    if (pick.type === "video") {
-      // Show video
-      img.style.display = "none";
-      v.style.display = "block";
-      v.src = pick.src;
-      v.muted = true;
-      v.loop = true;
-      v.play().catch(() => {
-        // If video fails (GFx / autoplay), fallback to image
-        showFallbackImage();
-      });
-    } else {
-      // Show image
+    function showFallbackImage() {
+      const imageOptions = mediaPool.filter(m => m.type === "image");
+      const pick = imageOptions[Math.floor(Math.random() * imageOptions.length)];
       v.pause();
+      v.removeAttribute("src"); // stop video from sticking around
+      v.load();
       v.style.display = "none";
-      img.style.display = "block";
+
       img.src = pick.src;
+      img.style.display = "block";
     }
-  }
 
-  function showFallbackImage() {
-    const imageOptions = mediaPool.filter(m => m.type === "image");
-    const pick = imageOptions[Math.floor(Math.random() * imageOptions.length)];
-    v.pause();
-    v.style.display = "none";
-    img.style.display = "block";
-    img.src = pick.src;
-  }
+    function showRandomMedia() {
+      const pick = mediaPool[Math.floor(Math.random() * mediaPool.length)];
 
-  // Error handling (important for Chivalry / older browsers)
-  v.addEventListener("error", showFallbackImage);
+      if (pick.type === "video") {
+        img.style.display = "none";
+        img.removeAttribute("src");
 
-  // Start randomized display
-  showRandomMedia();
-</script>
+        v.style.display = "block";
+        v.muted = true;
+        v.loop = true;
+
+        v.src = pick.src;
+        v.load();
+
+        const p = v.play();
+        if (p && p.catch) p.catch(showFallbackImage);
+      } else {
+        v.pause();
+        v.removeAttribute("src");
+        v.load();
+        v.style.display = "none";
+
+        img.src = pick.src;
+        img.style.display = "block";
+      }
+    }
+
+    v.addEventListener("error", showFallbackImage);
+
+    // Start randomized display
+    showRandomMedia();
+  </script>
 
 </body>
 </html>
