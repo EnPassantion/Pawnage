@@ -10,9 +10,7 @@
 </head>
 <body>
 
-  <!-- IMPORTANT: no <source> child here -->
   <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;"></video>
-
   <img id="motdImage" style="display:none;" />
 
   <script>
@@ -26,49 +24,22 @@
     const v = document.getElementById("motdVideo");
     const img = document.getElementById("motdImage");
 
-    function showFallbackImage() {
-      const imageOptions = mediaPool.filter(m => m.type === "image");
-      const pick = imageOptions[Math.floor(Math.random() * imageOptions.length)];
+    const pick = mediaPool[(Math.random() * mediaPool.length) | 0];
+
+    if (pick.type === "video") {
+      img.style.display = "none";
+      v.style.display = "block";
+      v.src = pick.src;
+      v.load();
+      v.play(); // no fallback on failure
+    } else {
       v.pause();
-      v.removeAttribute("src"); // stop video from sticking around
+      v.removeAttribute("src");
       v.load();
       v.style.display = "none";
-
-      img.src = pick.src;
       img.style.display = "block";
+      img.src = pick.src;
     }
-
-    function showRandomMedia() {
-      const pick = mediaPool[Math.floor(Math.random() * mediaPool.length)];
-
-      if (pick.type === "video") {
-        img.style.display = "none";
-        img.removeAttribute("src");
-
-        v.style.display = "block";
-        v.muted = true;
-        v.loop = true;
-
-        v.src = pick.src;
-        v.load();
-
-        const p = v.play();
-        if (p && p.catch) p.catch(showFallbackImage);
-      } else {
-        v.pause();
-        v.removeAttribute("src");
-        v.load();
-        v.style.display = "none";
-
-        img.src = pick.src;
-        img.style.display = "block";
-      }
-    }
-
-    v.addEventListener("error", showFallbackImage);
-
-    // Start randomized display
-    showRandomMedia();
   </script>
 
 </body>
