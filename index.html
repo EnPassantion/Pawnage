@@ -1,33 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>MOTD</title>
-    <style>
-        body {
-            margin: 0;
-            background: black;
-            overflow: hidden;
-        }
-        img {
-            width: 100vw;
-            height: 100vh;
-            object-fit: contain;
-        }
-    </style>
+  <meta charset="utf-8">
+  <script>
+    const media = [
+      "motd1.mp4",
+      "motd1.png",
+      "motd2.jpg",
+      "motd3.png"
+    ];
+
+    // 6 hours in ms
+    const PERIOD = 6 * 60 * 60 * 1000;
+
+    // Which 6-hour block are we in globally (UTC-ish, epoch-based)
+    const block = Math.floor(Date.now() / PERIOD);
+
+    // 4 blocks per day (24h / 6h)
+    const blockInDay = block % 4;
+
+    // Day number (changes every 24h)
+    const day = Math.floor(block / 4);
+
+    // Deterministic "random" number generator (LCG)
+    function lcg(seed) {
+      let x = seed >>> 0;
+      return function() {
+        x = (1664525 * x + 1013904223) >>> 0;
+        return x;
+      };
+    }
+
+    // Deterministically shuffle media once per day (same for everyone)
+    const rand = lcg(day ^ 0xA5A5A5A5);
+    const order = media.slice();
+
+    // Fisher–Yates shuffle using our deterministic RNG
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = rand() % (i + 1);
+      const tmp = order[i];
+      order[i] = order[j];
+      order[j] = tmp;
+    }
+
+    // Pick the item for this 6-hour block (no repeats within the day)
+    const pick = order[blockInDay];
+
+    // Redirect to the chosen media
+    location.replace(pick);
+  </script>
 </head>
-<body>
-    <img id="motd" src="" />
-
-    <script>
-        var images = [
-        "motd1.png",
-        "motd2.jpg",
-        "motd3.png"
-        ];
-
-        var randomImage = images[Math.floor(Math.random() * images.length)];
-        document.getElementById("motd").src = randomImage;
-    </script>
-</body>
+<body style="background:black;"></body>
 </html>
