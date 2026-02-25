@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <script>
-    const media = [
-      "motd1.mp4",
-      "motd1.png",
-      "motd2.jpg",
-      "motd3.png"
-    ];
-
-    const pick = media[(Math.random() * media.length) | 0];
-
-    // Optional cache-bust to avoid blue-box on rejoin
-    const url = pick + "?cb=" + Date.now();
-
-    window.location.replace(url);
-  </script>
+    <meta charset="utf-8">
+    <title>MOTD</title>
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            overflow: hidden;
+        }
+        img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
+        }
+    </style>
 </head>
-<body style="background:black;"></body>
+<body>
+    <img id="motd" src="" />
+
+    <script>
+        var images = [
+        "motd1.png",
+        "motd2.jpg",
+        "motd3.png"
+        ];
+
+        var randomImage = images[Math.floor(Math.random() * images.length)];
+        document.getElementById("motd").src = randomImage;
+    </script>
+</body>
 </html>
