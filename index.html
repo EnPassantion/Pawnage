@@ -2,54 +2,21 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MOTD</title>
-  <style>
-    body { margin:0; background:black; overflow:hidden; }
-    img, video { width:100vw; height:100vh; object-fit:contain; }
-  </style>
-</head>
-<body>
-
-  <div id="stage"></div>
-
   <script>
-    const mediaPool = [
-      { type: "video", src: "motd1.mp4" },
-      { type: "image", src: "motd1.png" },
-      { type: "image", src: "motd2.jpg" },
-      { type: "image", src: "motd3.png" }
+    const media = [
+      "motd1.mp4",
+      "motd1.png",
+      "motd2.jpg",
+      "motd3.png"
     ];
 
-    const stage = document.getElementById("stage");
-    const pick  = mediaPool[(Math.random() * mediaPool.length) | 0];
+    const pick = media[(Math.random() * media.length) | 0];
 
-    // Cache-bust forces GFx to actually re-fetch instead of reusing a stale cached load
-    const cb = (Date.now()) + "_" + ((Math.random() * 1e9) | 0);
-    const url = pick.src + "?cb=" + cb;
+    // Optional cache-bust to avoid blue-box on rejoin
+    const url = pick + "?cb=" + Date.now();
 
-    // Clear any previous stuck element
-    stage.innerHTML = "";
-
-    if (pick.type === "video") {
-      const v = document.createElement("video");
-      v.muted = true;
-      v.loop = true;
-      v.autoplay = true;
-      v.setAttribute("playsinline", "");
-      v.preload = "metadata";
-      v.src = url;
-
-      stage.appendChild(v);
-
-      // Important: load() to kick GFx, play() best effort
-      v.load();
-      try { v.play(); } catch (e) {}
-    } else {
-      const img = document.createElement("img");
-      img.src = url;
-      stage.appendChild(img);
-    }
+    window.location.replace(url);
   </script>
-
-</body>
+</head>
+<body style="background:black;"></body>
 </html>
