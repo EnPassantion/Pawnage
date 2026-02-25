@@ -2,57 +2,21 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>MOTD</title>
-  <style>
-    body { margin:0; background:black; overflow:hidden; }
-
-    #wrap { position:relative; width:100vw; height:100vh; }
-
-    video, img {
-      position:absolute;
-      left:0; top:0;
-      width:100vw; height:100vh;
-      object-fit:contain;
-    }
-
-    /* image starts hidden; when shown it overlays the video */
-    #motdImage { display:none; }
-  </style>
-</head>
-<body>
-
-  <div id="wrap">
-    <video id="motdVideo" muted loop autoplay playsinline preload="metadata"></video>
-    <img id="motdImage" />
-  </div>
-
   <script>
-    // --- SETTINGS ---
-    const VIDEO_SRC = "motd1.mp4";
-    const IMAGES = ["motd1.png","motd2.jpg","motd3.png"];
+    const media = [
+      "motd1.mp4",
+      "motd1.png",
+      "motd2.jpg",
+      "motd3.png"
+    ];
 
-    const DECIDE_AFTER_MS = 100;   // wait before deciding (give video a head start)
-    const IMAGE_CHANCE = 0.50;      // 0.0..1.0 chance to overlay an image
+    const pick = media[(Math.random() * media.length) | 0];
 
-    const v = document.getElementById("motdVideo");
-    const img = document.getElementById("motdImage");
+    // Optional cache-bust to avoid blue-box on rejoin
+    const url = pick;
 
-    // Start loading video ASAP
-    v.src = VIDEO_SRC;
-    v.load();
-    try { v.play(); } catch (e) {}
-
-    // After a short delay, maybe overlay an image
-    setTimeout(() => {
-      if (Math.random() < IMAGE_CHANCE) {
-        const pick = IMAGES[(Math.random() * IMAGES.length) | 0];
-        img.src = pick;
-        img.style.display = "block";
-      } else {
-        img.style.display = "none";
-      }
-    }, DECIDE_AFTER_MS);
+    window.location.replace(url);
   </script>
-
-</body>
+</head>
+<body style="background:black;"></body>
 </html>
