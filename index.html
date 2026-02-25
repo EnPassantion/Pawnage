@@ -1,34 +1,52 @@
-<script>
-  const media = [
-    { type: "video", src: "motd1.mp4" },
-  ];
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MOTD</title>
+  <style>
+    body { margin:0; background:black; overflow:hidden; }
+    img, video { width:100vw; height:100vh; object-fit:contain; }
+  </style>
+</head>
+<body>
 
-  const PERIOD = 6 * 60 * 60 * 1000;
-  const block = Math.floor(Date.now() / PERIOD);
-  const blockInDay = block % media.length;
-  const day = Math.floor(block / media.length);
+  <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;">
+    <source src="motd1.mp4" type="video/mp4">
+  </video>
 
-  function lcg(seed){
-    let x = seed >>> 0;
-    return function(){
-      x = (1664525 * x + 1013904223) >>> 0;
-      return x;
-    };
-  }
+  <img id="motdImage" style="display:none;" />
 
-  const rand = lcg(day ^ 0xA5A5A5A5);
-  const order = media.slice();
+  <script>
+    const images = ["motd1.png","motd2.jpg","motd3.png"];
+    const v = document.getElementById("motdVideo");
+    const img = document.getElementById("motdImage");
 
-  for (let i = order.length - 1; i > 0; i--) {
-    const j = rand() % (i + 1);
-    [order[i], order[j]] = [order[j], order[i]];
-  }
+    function showRandomImage() {
+      const pick = images[Math.floor(Math.random() * images.length)];
+      img.src = pick;
+      img.style.display = "block";
+      v.style.display = "none";
+    }
 
-  const pick = order[blockInDay];
+    // Show video first
+    v.style.display = "block";
+    img.style.display = "none";
+    v.muted = true;
 
-  if (pick.type === "video") {
-    location.replace("video.html?src=" + pick.src);
-  } else {
-    location.replace(pick.src);
-  }
-</script>
+    // If the video errors, fallback immediately
+    v.addEventListener("error", showRandomImage);
+
+    // Try to start playback; if blocked, fallback
+    const p = v.play();
+    if (p && p.catch) {
+      p.catch(showRandomImage);
+    }
+
+    // Safety: if it never loads metadata, fallback after 2s
+    setTimeout(() => {
+      if (v.readyState < 1) showRandomImage();
+    }, 2000);
+  </script>
+
+</body>
+</html>
