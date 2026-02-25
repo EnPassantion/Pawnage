@@ -1,22 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <script>
-    const media = [
-      "motd1.mp4",
-      "motd1.png",
-      "motd2.jpg",
-      "motd3.png"
-    ];
+<script>
+  const media = [
+    { type: "video", src: "motd1.mp4" },
+  ];
 
-    const pick = media[(Math.random() * media.length) | 0];
+  const PERIOD = 6 * 60 * 60 * 1000;
+  const block = Math.floor(Date.now() / PERIOD);
+  const blockInDay = block % media.length;
+  const day = Math.floor(block / media.length);
 
-    // Optional cache-bust to avoid blue-box on rejoin
-    const url = pick + "?cb=" + Date.now();
+  function lcg(seed){
+    let x = seed >>> 0;
+    return function(){
+      x = (1664525 * x + 1013904223) >>> 0;
+      return x;
+    };
+  }
 
-    window.location.replace(url);
-  </script>
-</head>
-<body style="background:black;"></body>
-</html>
+  const rand = lcg(day ^ 0xA5A5A5A5);
+  const order = media.slice();
+
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = rand() % (i + 1);
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  const pick = order[blockInDay];
+
+  if (pick.type === "video") {
+    location.replace("video.html?src=" + pick.src);
+  } else {
+    location.replace(pick.src);
+  }
+</script>
