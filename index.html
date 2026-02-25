@@ -5,95 +5,53 @@
   <title>MOTD</title>
   <style>
     body { margin:0; background:black; overflow:hidden; }
-    img, video { width:100vw; height:100vh; object-fit:contain; }
+
+    #wrap { position:relative; width:100vw; height:100vh; }
+
+    video, img {
+      position:absolute;
+      left:0; top:0;
+      width:100vw; height:100vh;
+      object-fit:contain;
+    }
+
+    /* image starts hidden; when shown it overlays the video */
+    #motdImage { display:none; }
   </style>
 </head>
 <body>
 
-  <!-- Keep video + source pattern (important for early fetch stability) -->
-  <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;">
-    <source id="videoSource" src="motd1.mp4" type="video/mp4">
-  </video>
-
-  <img id="motdImage" style="display:none;" />
+  <div id="wrap">
+    <video id="motdVideo" muted loop autoplay playsinline preload="metadata"></video>
+    <img id="motdImage" />
+  </div>
 
   <script>
-    // ===== MEDIA POOL (no repeats within cycle) =====
-    const media = [
-      { type: "video", src: "motd1.mp4" },
-      { type: "image", src: "motd1.png" },
-      { type: "image", src: "motd2.jpg" },
-      { type: "image", src: "motd3.png" }
-    ];
+    // --- SETTINGS ---
+    const VIDEO_SRC = "motd1.mp4";
+    const IMAGES = ["motd1.png","motd2.jpg","motd3.png"];
+
+    const DECIDE_AFTER_MS = 1500;   // wait before deciding (give video a head start)
+    const IMAGE_CHANCE = 0.50;      // 0.0..1.0 chance to overlay an image
 
     const v = document.getElementById("motdVideo");
     const img = document.getElementById("motdImage");
-    const source = document.getElementById("videoSource");
 
-    // ===== 6-HOUR DETERMINISTIC BLOCK =====
-    const PERIOD = 6 * 60 * 60 * 1000;
-    const block = Math.floor(Date.now() / PERIOD);
+    // Start loading video ASAP
+    v.src = VIDEO_SRC;
+    v.load();
+    try { v.play(); } catch (e) {}
 
-    // 4 blocks per full cycle (no repeats)
-    const blockInCycle = block % media.length;
-
-    // ===== DAILY DETERMINISTIC SHUFFLE (no true randomness = more stable) =====
-    const day = Math.floor(block / media.length);
-
-    function lcg(seed) {
-      let x = seed >>> 0;
-      return function() {
-        x = (1664525 * x + 1013904223) >>> 0;
-        return x;
-      };
-    }
-
-    const rand = lcg(day ^ 0x9E3779B9);
-    const order = media.slice();
-
-    // Fisher–Yates deterministic shuffle
-    for (let i = order.length - 1; i > 0; i--) {
-      const j = rand() % (i + 1);
-      const tmp = order[i];
-      order[i] = order[j];
-      order[j] = tmp;
-    }
-
-    const pick = order[blockInCycle];
-
-    function showImage(src) {
-      img.src = src;
-      img.style.display = "block";
-      v.style.display = "none";
-    }
-
-    function showVideo(src) {
-      // CRITICAL: set <source> instead of v.src (more stable in HTMLSurface)
-      source.src = src;
-      v.load(); // forces the embedded renderer to re-evaluate once
-      v.style.display = "block";
-      img.style.display = "none";
-      v.muted = true;
-
-      // Keep your original watchdog (this is why your old file felt stable)
-      const p = v.play();
-      if (p && p.catch) {
-        p.catch(() => showImage("motd1.png"));
+    // After a short delay, maybe overlay an image
+    setTimeout(() => {
+      if (Math.random() < IMAGE_CHANCE) {
+        const pick = IMAGES[(Math.random() * IMAGES.length) | 0];
+        img.src = pick;
+        img.style.display = "block";
+      } else {
+        img.style.display = "none";
       }
-
-      setTimeout(() => {
-        if (v.readyState < 1) {
-          showImage("motd1.png");
-        }
-      }, 2000);
-    }
-
-    // ===== SINGLE DECISION AT LOAD (no further DOM mutation) =====
-    if (pick.type === "video") {
-      showVideo(pick.src);
-    } else {
-      showImage(pick.src);
-    }
+    }, DECIDE_AFTER_MS);
   </script>
 
 </body>
