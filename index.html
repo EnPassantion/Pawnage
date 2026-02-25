@@ -10,36 +10,42 @@
 </head>
 <body>
 
-  <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;"></video>
+  <video id="motdVideo" muted loop autoplay playsinline preload="metadata" style="display:none;">
+    <source src="motd1.mp4" type="video/mp4">
+  </video>
+
   <img id="motdImage" style="display:none;" />
 
   <script>
-    const mediaPool = [
-      { type: "video", src: "motd1.mp4" },
-      { type: "image", src: "motd1.png" },
-      { type: "image", src: "motd2.jpg" },
-      { type: "image", src: "motd3.png" }
-    ];
-
+    const images = ["motd1.png","motd2.jpg","motd3.png"];
     const v = document.getElementById("motdVideo");
     const img = document.getElementById("motdImage");
 
-    const pick = mediaPool[(Math.random() * mediaPool.length) | 0];
-
-    if (pick.type === "video") {
-      img.style.display = "none";
-      v.style.display = "block";
-      v.src = pick.src;
-      v.load();
-      v.play(); // no fallback on failure
-    } else {
-      v.pause();
-      v.removeAttribute("src");
-      v.load();
-      v.style.display = "none";
+    function showRandomImage() {
+      const pick = images[Math.floor(Math.random() * images.length)];
+      img.src = pick;
       img.style.display = "block";
-      img.src = pick.src;
+      v.style.display = "none";
     }
+
+    // Show video first
+    v.style.display = "block";
+    img.style.display = "none";
+    v.muted = true;
+
+    // If the video errors, fallback immediately
+    v.addEventListener("error", showRandomImage);
+
+    // Try to start playback; if blocked, fallback
+    const p = v.play();
+    if (p && p.catch) {
+      p.catch(showRandomImage);
+    }
+
+    // Safety: if it never loads metadata, fallback after 2s
+    setTimeout(() => {
+      if (v.readyState < 1) showRandomImage();
+    }, 2000);
   </script>
 
 </body>
