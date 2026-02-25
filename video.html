@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin:0; background:black; overflow:hidden; }
+    video {
+      width:100vw;
+      height:100vh;
+      object-fit:contain;
+      pointer-events:none; /* disables interaction */
+    }
+  </style>
+</head>
+<body>
+  <video id="v" autoplay muted loop playsinline controls="false"></video>
+
+  <script>
+    // Get ?src= parameter
+    const params = new URLSearchParams(location.search);
+    const src = params.get("src");
+
+    const v = document.getElementById("v");
+    if (src) {
+      v.src = src;
+      v.muted = true;     // REQUIRED for autoplay in embedded browsers
+      v.autoplay = true;
+      v.loop = true;
+      v.playsInline = true;
+      v.controls = false; // hide timeline UI
+      v.load();
+      v.play().catch(()=>{});
+    }
+  </script>
+</body>
+</html>
